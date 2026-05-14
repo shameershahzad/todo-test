@@ -5,27 +5,34 @@ function App() {
   const [text, setText] = useState("");
   const [todos, setTodos] = useState([]);
 
-  // Get Todos
-  const getTodos = async () => {
-    const res = await axios.get("http://localhost:5000/todos");
-    setTodos(res.data);
-  };
+  const API = import.meta.env.VITE_API_URL;
+
+  // FIX: directly handle inside effect
+  useEffect(() => {
+    const fetchTodos = async () => {
+      try {
+        const res = await axios.get(`${API}/todos`);
+        setTodos(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchTodos();
+  }, []);
 
   // Add Todo
   const addTodo = async () => {
     if (!text) return;
 
-    await axios.post("http://localhost:5000/todos", {
-      text,
-    });
+    await axios.post(`${API}/todos`, { text });
 
     setText("");
-    getTodos();
-  };
 
-  useEffect(() => {
-    getTodos();
-  }, []);
+    // reload safely
+    const res = await axios.get(`${API}/todos`);
+    setTodos(res.data);
+  };
 
   return (
     <div style={{ padding: "20px" }}>
