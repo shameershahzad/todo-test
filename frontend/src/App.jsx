@@ -5,33 +5,42 @@ function App() {
   const [text, setText] = useState("");
   const [todos, setTodos] = useState([]);
 
+  // API URL from Vercel/local env
   const API = import.meta.env.VITE_API_URL;
 
-  // FIX: directly handle inside effect
+  // Get Todos
   useEffect(() => {
     const fetchTodos = async () => {
       try {
+        console.log("API URL:", API);
+
         const res = await axios.get(`${API}/todos`);
         setTodos(res.data);
       } catch (error) {
-        console.log(error);
+        console.log("GET Error:", error);
       }
     };
 
     fetchTodos();
-  }, []);
+  }, [API]);
 
   // Add Todo
   const addTodo = async () => {
-    if (!text) return;
+    if (!text.trim()) return;
 
-    await axios.post(`${API}/todos`, { text });
+    try {
+      await axios.post(`${API}/todos`, {
+        text,
+      });
 
-    setText("");
+      setText("");
 
-    // reload safely
-    const res = await axios.get(`${API}/todos`);
-    setTodos(res.data);
+      // Refresh Todos
+      const res = await axios.get(`${API}/todos`);
+      setTodos(res.data);
+    } catch (error) {
+      console.log("POST Error:", error);
+    }
   };
 
   return (
